@@ -1,0 +1,50 @@
+{
+  "output": {
+    "blocklist": [],
+    "plugins_order": [
+      "filter#0",
+      "equalizer#0",
+      "stereo_tools#0",
+      "limiter#0"
+    ],
+    "filter#0": {
+      "bypass": false,
+      "frequency": 90.0,
+      "inertia": 20.0,
+      "mode": "Highpass",
+      "resonance": -3.0,
+      "type": "12 dB/oct"
+    },
+    "equalizer#0": {
+      "bypass": false,
+      "balance": 0.0,
+      "input-gain": 0.0,
+      "output-gain": 0.0,
+      "split-channels": false,
+      "left": {
+        "band0": { "frequency": 100, "gain": -6.0, "q": 1.4, "type": "Bell" },
+        "band1": { "frequency": 250, "gain": -2.0, "q": 1.0, "type": "Bell" },
+        "band2": { "frequency": 1000, "gain": 3.0, "q": 1.0, "type": "Bell" },
+        "band3": { "frequency": 3000, "gain": 4.5, "q": 1.2, "type": "Bell" },
+        "band4": { "frequency": 8000, "gain": 3.0, "q": 1.0, "type": "Bell" }
+      },
+      "right": {
+        "band0": { "frequency": 100, "gain": -6.0, "q": 1.4, "type": "Bell" },
+        "band1": { "frequency": 250, "gain": -2.0, "q": 1.0, "type": "Bell" },
+        "band2": { "frequency": 1000, "gain": 3.0, "q": 1.0, "type": "Bell" },
+        "band3": { "frequency": 3000, "gain": 4.5, "q": 1.2, "type": "Bell" },
+        "band4": { "frequency": 8000, "gain": 3.0, "q": 1.0, "type": "Bell" }
+      }
+    },
+    "stereo_tools#0": {
+      "bypass": false,
+      "stereo-wide": 1.3
+    },
+    "limiter#0": {
+      "bypass": false,
+      "input-gain": 4.0,
+      "limit": -0.5,
+      "release": 50.0
+    }
+  }
+}

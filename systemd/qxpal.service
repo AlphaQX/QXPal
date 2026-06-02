@@ -1,0 +1,15 @@
+[Unit]
+Description=QXPal Audio Optimization Service
+After=sound.target multi-user.target
+Requires=sound.target
+Documentation=https://github.com/yourusername/QXPal
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/bin/qxpal optimize
+StandardOutput=journal+console
+StandardError=journal+console
+
+[Install]
+WantedBy=multi-user.target
