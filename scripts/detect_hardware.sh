@@ -70,7 +70,7 @@ detect_wireplumber() {
 }
 
 detect_easyeffects() {
-    if pgrep -x "easyeffects" >/dev/null; then
+    if pgrep -f "easyeffects" >/dev/null; then
         echo "true"
     else
         echo "false"

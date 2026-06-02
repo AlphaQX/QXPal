@@ -18,8 +18,20 @@ log_error() { echo -e "${RED}[ERROR]${NC} $*"; }
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BASE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-# Define target paths
+# Detect if EasyEffects is installed natively or via Flatpak
+IS_FLATPAK=0
 EE_PRESET_DIR="$HOME/.config/easyeffects/output"
+EE_AUTOLOAD_FILE="$HOME/.config/easyeffects/autoload.json"
+
+if ! command -v easyeffects >/dev/null 2>&1; then
+    if command -v flatpak >/dev/null 2>&1 && flatpak list --columns=application | grep -q "com.github.wwmm.easyeffects"; then
+        log_info "EasyEffects Flatpak installation detected."
+        IS_FLATPAK=1
+        EE_PRESET_DIR="$HOME/.var/app/com.github.wwmm.easyeffects/config/easyeffects/output"
+        EE_AUTOLOAD_FILE="$HOME/.var/app/com.github.wwmm.easyeffects/config/easyeffects/autoload.json"
+    fi
+fi
+
 EE_PRESET_NAME="qxpal.json"
 EE_SRC_PRESET="$BASE_DIR/configs/easyeffects/qxpal.json"
 
@@ -37,35 +49,38 @@ deploy_preset() {
 }
 
 configure_autoload() {
-    # Autoload preset configuration
     log_info "Configuring EasyEffects autoload rules..."
-    local autoload_file="$HOME/.config/easyeffects/autoload.json"
-    mkdir -p "$(dirname "$autoload_file")"
+    mkdir -p "$(dirname "$EE_AUTOLOAD_FILE")"
     
-    # Write default autoload rules to load 'qxpal' preset automatically
-    cat << 'EOF' > "$autoload_file"
+    cat << 'EOF' > "$EE_AUTOLOAD_FILE"
 {
   "output": {
     "preset": "qxpal"
   }
 }
 EOF
-    log_success "Configured autoload file: $autoload_file"
+    log_success "Configured autoload file: $EE_AUTOLOAD_FILE"
 }
 
 restart_easyeffects() {
     log_info "Starting/restarting EasyEffects daemon..."
     
-    # Quit any running instances
-    easyeffects -q 2>/dev/null || true
-    sleep 0.5
-    
-    # Start in daemon mode (background)
-    if command -v easyeffects >/dev/null 2>&1; then
-        easyeffects --gapplication-service >/dev/null 2>&1 &
-        log_success "EasyEffects background service launched."
+    if [ "$IS_FLATPAK" -eq 1 ]; then
+        # Quit Flatpak instance
+        flatpak run com.github.wwmm.easyeffects -q 2>/dev/null || true
+        sleep 0.5
+        flatpak run com.github.wwmm.easyeffects --gapplication-service >/dev/null 2>&1 &
+        log_success "EasyEffects Flatpak background service launched."
     else
-        log_warn "easyeffects command not found. Please install it."
+        # Quit native instance
+        easyeffects -q 2>/dev/null || true
+        sleep 0.5
+        if command -v easyeffects >/dev/null 2>&1; then
+            easyeffects --gapplication-service >/dev/null 2>&1 &
+            log_success "EasyEffects background service launched."
+        else
+            log_warn "easyeffects command not found. Please install it."
+        fi
     fi
 }
 
@@ -76,8 +91,9 @@ main() {
         exit 0
     fi
     
-    if ! command -v easyeffects >/dev/null 2>&1; then
-        log_warn "EasyEffects is not installed on this system. DSP filters will not be active."
+    # Check if we have either native or flatpak installed
+    if ! command -v easyeffects >/dev/null 2>&1 && [ "$IS_FLATPAK" -eq 0 ]; then
+        log_warn "EasyEffects is not installed (natively or via Flatpak) on this system. DSP filters will not be active."
         exit 0
     fi
     

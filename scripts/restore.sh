@@ -63,18 +63,33 @@ restore_user() {
         exit 1
     fi
     
-    restore_file "$HOME/.config/easyeffects/output/qxpal.json" "$USER_BACKUP_DIR/qxpal.json"
-    restore_file "$HOME/.config/easyeffects/autoload.json" "$USER_BACKUP_DIR/autoload.json"
-    restore_file "$HOME/.config/pipewire/pipewire.conf.d/qxpal.conf" "$USER_BACKUP_DIR/qxpal.conf"
-    restore_file "$HOME/.config/wireplumber/main.lua.d/50-qxpal.lua" "$USER_BACKUP_DIR/50-qxpal.lua"
-    restore_file "$HOME/.config/wireplumber/wireplumber.conf.d/qxpal.conf" "$USER_BACKUP_DIR/qxpal.conf"
+    # Restore Native files
+    restore_file "$HOME/.config/easyeffects/output/qxpal.json" "$USER_BACKUP_DIR/native/qxpal.json"
+    restore_file "$HOME/.config/easyeffects/autoload.json" "$USER_BACKUP_DIR/native/autoload.json"
+    restore_file "$HOME/.config/pipewire/pipewire.conf.d/qxpal.conf" "$USER_BACKUP_DIR/native/qxpal.conf"
+    restore_file "$HOME/.config/wireplumber/main.lua.d/50-qxpal.lua" "$USER_BACKUP_DIR/native/50-qxpal.lua"
+    restore_file "$HOME/.config/wireplumber/wireplumber.conf.d/qxpal.conf" "$USER_BACKUP_DIR/native/qxpal.conf"
     
-    # Stop/Restart EasyEffects to load original preset
-    easyeffects -q || true
+    # Restore Flatpak files
+    restore_file "$HOME/.var/app/com.github.wwmm.easyeffects/config/easyeffects/output/qxpal.json" "$USER_BACKUP_DIR/flatpak/qxpal.json"
+    restore_file "$HOME/.var/app/com.github.wwmm.easyeffects/config/easyeffects/autoload.json" "$USER_BACKUP_DIR/flatpak/autoload.json"
+    
+    # Stop/Restart EasyEffects (both native and flatpak to ensure pristine state)
+    if command -v easyeffects >/dev/null 2>&1; then
+        easyeffects -q || true
+    fi
+    if command -v flatpak >/dev/null 2>&1; then
+        flatpak run com.github.wwmm.easyeffects -q 2>/dev/null || true
+    fi
     sleep 0.5
+    
+    # Start native if it was available, otherwise start Flatpak if was present
     if command -v easyeffects >/dev/null 2>&1; then
         easyeffects --gapplication-service >/dev/null 2>&1 &
-        log_info "EasyEffects restarted."
+        log_info "EasyEffects native daemon restarted."
+    elif command -v flatpak >/dev/null 2>&1 && flatpak list --columns=application | grep -q "com.github.wwmm.easyeffects"; then
+        flatpak run com.github.wwmm.easyeffects --gapplication-service >/dev/null 2>&1 &
+        log_info "EasyEffects Flatpak daemon restarted."
     fi
     
     # Clean up backups

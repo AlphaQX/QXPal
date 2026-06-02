@@ -53,12 +53,26 @@ check_dependencies() {
     if [ "$missing" -eq 1 ]; then
         if [ -n "$PREFIX" ]; then
             log_warn "Missing dependencies. Continuing anyway due to mock test environment."
+            return 0
+        fi
+        
+        if command -v apt-get >/dev/null 2>&1; then
+            log_info "Debian/Ubuntu detected. Attempting to install missing dependencies..."
+            apt-get update -qq || true
+            if apt-get install -y alsa-utils pipewire wireplumber; then
+                log_success "Successfully installed system dependencies via apt."
+                missing=0
+            else
+                log_error "Failed to install dependencies automatically via apt."
+                exit 1
+            fi
         else
             log_error "Missing key audio stack dependencies. Please install pipewire, wireplumber, and alsa-utils first."
             exit 1
         fi
-    else
-        log_success "All critical dependencies found."
+    fi
+    if [ "$missing" -eq 0 ]; then
+        log_success "All critical dependencies verified."
     fi
 }
 

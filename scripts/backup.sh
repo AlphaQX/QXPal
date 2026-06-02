@@ -63,14 +63,19 @@ backup_user_files() {
         return 0
     fi
     
-    mkdir -p "$backup_target"
+    mkdir -p "$backup_target/native"
+    mkdir -p "$backup_target/flatpak"
     
-    # Files we potentially override
-    backup_file "$HOME/.config/easyeffects/output/qxpal.json" "$backup_target"
-    backup_file "$HOME/.config/easyeffects/autoload.json" "$backup_target"
-    backup_file "$HOME/.config/pipewire/pipewire.conf.d/qxpal.conf" "$backup_target"
-    backup_file "$HOME/.config/wireplumber/main.lua.d/50-qxpal.lua" "$backup_target"
-    backup_file "$HOME/.config/wireplumber/wireplumber.conf.d/qxpal.conf" "$backup_target"
+    # Native files we potentially override
+    backup_file "$HOME/.config/easyeffects/output/qxpal.json" "$backup_target/native"
+    backup_file "$HOME/.config/easyeffects/autoload.json" "$backup_target/native"
+    backup_file "$HOME/.config/pipewire/pipewire.conf.d/qxpal.conf" "$backup_target/native"
+    backup_file "$HOME/.config/wireplumber/main.lua.d/50-qxpal.lua" "$backup_target/native"
+    backup_file "$HOME/.config/wireplumber/wireplumber.conf.d/qxpal.conf" "$backup_target/native"
+    
+    # Flatpak files we potentially override
+    backup_file "$HOME/.var/app/com.github.wwmm.easyeffects/config/easyeffects/output/qxpal.json" "$backup_target/flatpak"
+    backup_file "$HOME/.var/app/com.github.wwmm.easyeffects/config/easyeffects/autoload.json" "$backup_target/flatpak"
     
     # Copy files into primary backup
     cp -r "$backup_target"/* "$USER_BACKUP_DIR/" 2>/dev/null || true

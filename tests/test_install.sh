@@ -71,6 +71,12 @@ main() {
     
     log_success "All assets deployed with proper layout and permissions."
     
+    # Create a mock backup to prevent restore.sh warnings during uninstall
+    local mock_backup_dir="$HOME/.config/qxpal/backups"
+    mkdir -p "$mock_backup_dir/native"
+    mkdir -p "$mock_backup_dir/flatpak"
+    echo "test" > "$mock_backup_dir/pristine_backup.info"
+    
     # 4. Run uninstall.sh
     log_info "Running uninstall.sh to revert changes..."
     bash "$BASE_DIR/uninstall.sh"
